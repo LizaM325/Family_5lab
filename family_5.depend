@@ -1,6 +1,7 @@
 # depslib dependency file v1.0
-1745756720 source:c:\users\lizam\onedrive\–абочий стол\€\учеба\языки и методы проги\family_5_git\family_5\main.cpp
+1745761664 source:c:\users\lizam\onedrive\–абочий стол\€\учеба\языки и методы проги\family_5_git\family_5\main.cpp
 	<iostream>
 	<string>
 	<vector>
+	<memory>
 

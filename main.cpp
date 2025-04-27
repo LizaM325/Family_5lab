@@ -1,7 +1,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 
+// Enum for drinking rules
 enum class The_drinking_rule
 {
     in_sips,
@@ -9,32 +11,56 @@ enum class The_drinking_rule
     use_spoon
 };
 
+class DrinkingStrategy
+{
+public:
+    virtual ~DrinkingStrategy() = default;
+    virtual void Drink() const = 0;
+};
+
+class InSipsDrinkingStrategy : public DrinkingStrategy
+{
+public:
+    void Drink() const override
+    {
+        std::cout << "drinking in small sips." << std::endl;
+    }
+};
+
+class UseStrawDrinkingStrategy : public DrinkingStrategy
+{
+public:
+    void Drink() const override
+    {
+        std::cout << "drinking through a straw." << std::endl;
+    }
+};
+
+class UseSpoonDrinkingStrategy : public DrinkingStrategy
+{
+public:
+    void Drink() const override
+    {
+        std::cout << "drinking with a spoon." << std::endl;
+    }
+};
+
+// Tea class using strategy
 class Tea
 {
 protected:
     std::string name;
-    The_drinking_rule drinkingRule;
+    std::unique_ptr<DrinkingStrategy> drinkingStrategy;
 
 public:
-    Tea(const std::string& name, The_drinking_rule rule)
-        : name(name), drinkingRule(rule) {}
+    Tea(const std::string& name, std::unique_ptr<DrinkingStrategy> strategy)
+        : name(name), drinkingStrategy(std::move(strategy)) {}
 
     void Drink() const
     {
         BrewTea();
         PourTea();
-        switch (drinkingRule)
-        {
-            case The_drinking_rule::in_sips:
-                std::cout << "drinking in small sips." << std::endl;
-                break;
-            case The_drinking_rule::use_straw:
-                std::cout << "drinking through a straw." << std::endl;
-                break;
-            case The_drinking_rule::use_spoon:
-                std::cout << "drinking with a spoon." << std::endl;
-                break;
-        }
+        drinkingStrategy->Drink();
         EnjoyTea();
     }
 
@@ -50,76 +76,43 @@ public:
 
     virtual void EnjoyTea() const
     {
-        std::cout << "Enjoy your " << name << " tea!" << std::endl;
+        std::cout << "Enjoy your " << name << "!" << std::endl;
     }
 };
 
+// Concrete tea classes
 class BlackTea : public Tea
 {
 public:
-    BlackTea(The_drinking_rule rule)
-        : Tea("Black tea", rule) {}
-
-    void BrewTea() const override
-    {
-        std::cout << "Brewing black tea..." << std::endl;
-    }
-
-    void PourTea() const override
-    {
-        std::cout << "Pouring black tea..." << std::endl;
-    }
+    BlackTea(std::unique_ptr<DrinkingStrategy> strategy)
+        : Tea("Black tea", std::move(strategy)) {}
 };
 
 class GreenTea : public Tea
 {
 public:
-    GreenTea(The_drinking_rule rule)
-        : Tea("Green tea", rule) {}
-
-    void BrewTea() const override
-    {
-        std::cout << "Brewing green tea..." << std::endl;
-    }
-
-    void PourTea() const override
-    {
-        std::cout << "Pouring green tea..." << std::endl;
-    }
+    GreenTea(std::unique_ptr<DrinkingStrategy> strategy)
+        : Tea("Green tea", std::move(strategy)) {}
 };
 
 class HibiscusTea : public Tea
 {
 public:
-    HibiscusTea(The_drinking_rule rule)
-        : Tea("Hibiscus tea", rule) {}
-
-    void BrewTea() const override
-    {
-        std::cout << "Brewing hibiscus tea..." << std::endl;
-    }
-
-    void PourTea() const override
-    {
-        std::cout << "Pouring hibiscus tea..." << std::endl;
-    }
+    HibiscusTea(std::unique_ptr<DrinkingStrategy> strategy)
+        : Tea("Hibiscus tea", std::move(strategy)) {}
 };
 
 int main()
 {
-    std::vector<Tea*> teas;
-    teas.push_back(new BlackTea(The_drinking_rule::in_sips));
-    teas.push_back(new GreenTea(The_drinking_rule::use_straw));
-    teas.push_back(new HibiscusTea(The_drinking_rule::use_spoon));
+    std::vector<std::unique_ptr<Tea>> teas;
+
+    teas.push_back(std::make_unique<BlackTea>(std::make_unique<InSipsDrinkingStrategy>()));
+    teas.push_back(std::make_unique<GreenTea>(std::make_unique<UseStrawDrinkingStrategy>()));
+    teas.push_back(std::make_unique<HibiscusTea>(std::make_unique<UseSpoonDrinkingStrategy>()));
 
     for (const auto& tea : teas)
     {
         tea->Drink();
-    }
-
-    for (auto& tea : teas)
-    {
-        delete tea;
     }
 
     return 0;
